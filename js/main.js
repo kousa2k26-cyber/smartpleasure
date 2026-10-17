@@ -10,7 +10,8 @@
     upiId: "yourname@upi"
   };
 
-  var CART_KEY = "your-brand-cart-v1";
+  // Use a fresh cart key so any old sample cart cannot be mistaken for this real listing.
+  var CART_KEY = "smartpleasure-cart-v2";
   var products = Array.isArray(window.STORE_PRODUCTS) ? window.STORE_PRODUCTS : [];
   var money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
@@ -22,6 +23,16 @@
 
   function formatPrice(amount) {
     return money.format(Number(amount) || 0);
+  }
+
+  // Show the original price only when a genuine comparison price is provided.
+  function priceMarkup(product, className) {
+    var originalPrice = Number(product.originalPrice) || 0;
+    var markup = '<p class="' + className + '"><strong class="price-current">' + formatPrice(product.price) + '</strong>';
+    if (originalPrice > Number(product.price)) {
+      markup += '<span class="price-was">MRP <s>' + formatPrice(originalPrice) + '</s></span>';
+    }
+    return markup + '</p>';
   }
 
   function findProduct(id) {
@@ -71,12 +82,13 @@
       '<a class="product-image-link" href="' + url + '" aria-label="View ' + name + '"><img src="' + image + '" alt="' + alt + '" loading="lazy"></a>' +
       '<div class="product-info"><p class="product-category">' + category + '</p>' +
       '<h3 class="product-title"><a href="' + url + '">' + name + '</a></h3>' +
-      '<p class="product-price">' + formatPrice(product.price) + ' <span class="sample-label">sample price</span></p>' +
+      priceMarkup(product, "product-price") +
       '<button class="button button-outline button-small" type="button" data-add-to-cart="' + id + '">Add to bag</button></div></article>';
   }
 
   function renderProductGrid(element, list) {
     if (!element) return;
+    element.classList.toggle("is-single-product", list.length === 1);
     if (!list.length) {
       element.innerHTML = '<p class="empty-products">No items in this category yet.</p>';
       return;
@@ -91,7 +103,7 @@
     document.querySelectorAll("[data-product-grid]").forEach(function (element) {
       renderProductGrid(element, products);
       var count = document.querySelector("[data-product-count]");
-      if (count) count.textContent = products.length + " sample products";
+      if (count) count.textContent = products.length + (products.length === 1 ? " product" : " products");
     });
   }
 
@@ -120,17 +132,24 @@
     if (descriptionMeta) descriptionMeta.setAttribute("content", description);
     if (ogTitle) ogTitle.setAttribute("content", document.title);
     if (ogDescription) ogDescription.setAttribute("content", description);
-    if (ogUrl) ogUrl.setAttribute("content", "http://smartpleasure.shop/product.html?id=" + encodeURIComponent(product.id));
-    if (ogImage) ogImage.setAttribute("content", "http://smartpleasure.shop/" + product.image);
+    if (ogUrl) ogUrl.setAttribute("content", "https://smartpleasure.shop/product.html?id=" + encodeURIComponent(product.id));
+    if (ogImage) ogImage.setAttribute("content", "https://smartpleasure.shop/" + product.image);
     if (ogImageAlt) ogImageAlt.setAttribute("content", product.imageAlt);
-    var points = product.details.map(function (detail) { return "<span>" + escapeHTML(detail) + "</span>"; }).join("");
+    var featureMarkup = (product.features || []).map(function (feature) { return "<li>" + escapeHTML(feature) + "</li>"; }).join("");
+    var detailItems = (product.details || []).slice();
+    if (product.sku) detailItems.unshift("SKU: " + product.sku);
+    var detailMarkup = detailItems.map(function (detail) { return "<li>" + escapeHTML(detail) + "</li>"; }).join("");
+    var includedMarkup = (product.includedItems || []).map(function (item) { return "<li>" + escapeHTML(item) + "</li>"; }).join("");
     root.innerHTML = '<div class="product-detail-layout">' +
       '<img class="product-detail-image" src="' + escapeHTML(product.image) + '" alt="' + escapeHTML(product.imageAlt) + '">' +
       '<div class="product-detail-copy"><p class="product-category">' + escapeHTML(product.categoryLabel) + '</p>' +
-      '<h1>' + safeName + '</h1><p class="product-detail-price">' + formatPrice(product.price) + ' <span class="sample-label">sample price</span></p>' +
+      '<h1>' + safeName + '</h1>' + priceMarkup(product, "product-detail-price") +
       '<p class="product-description">' + escapeHTML(product.description) + '</p>' +
       '<button class="button button-primary" type="button" data-add-to-cart="' + escapeHTML(product.id) + '">Add to bag</button>' +
-      '<div class="product-detail-meta">' + points + '</div>' +
+      '<div class="product-detail-meta">' +
+      (featureMarkup ? '<section><h2>Key features</h2><ul>' + featureMarkup + '</ul></section>' : '') +
+      '<section><h2>Product details</h2><ul>' + detailMarkup + '</ul></section>' +
+      (includedMarkup ? '<section><h2>What’s in the box</h2><ul>' + includedMarkup + '</ul></section>' : '') + '</div>' +
       '<a class="continue-link" href="shop.html">← Back to all products</a></div></div>';
   }
 

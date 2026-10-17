@@ -4,7 +4,7 @@ A simple static online store for smartpleasure, made with plain HTML, CSS, and J
 
 ## Preview the site
 
-Open `index.html` in a web browser to view the home page. On GitHub Pages or another static host, the cart and checkout pages work on the same site address.
+Open `index.html` in a web browser to view the home page. For a live store, choose a static website host whose terms allow commercial and e-commerce sites. GitHub Pages should not be used to run an online business or e-commerce site.
 
 ## Pages
 

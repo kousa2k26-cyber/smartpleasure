@@ -1,26 +1,24 @@
 # smartpleasure
 
-A simple static online store for smartpleasure, made with plain HTML, CSS, and JavaScript. It has no build step or package installation.
+A static storefront prototype for smartpleasure, built with plain HTML, CSS and vanilla JavaScript. No build step or package installation is needed.
 
-## Preview the site
+## Preview
 
-Open `index.html` in a web browser to view the home page. For a live store, choose a static website host whose terms allow commercial and e-commerce sites. GitHub Pages should not be used to run an online business or e-commerce site.
+Open \`index.html\` in a browser. The design is mobile-first and uses a burgundy, rose and ivory editorial style. The catalogue is intentionally empty until approved products and photos are added.
 
 ## Pages
 
-- `index.html` — home page
-- `shop.html` — product list
-- `product.html` — product details, selected with a URL such as `product.html?id=1`
-- `cart.html` and `checkout.html` — shopping bag and WhatsApp order form
-- `about.html` and `contact.html` — store information and contact options
+- \`index.html\` — campaign home, moving image features and category links
+- \`shop.html\` — collection filters and empty catalogue state
+- \`product.html\` — product details loaded by URL ID when products are added
+- \`cart.html\` and \`checkout.html\` — shopping bag, WhatsApp order flow and UPI placeholder
+- \`about.html\` and \`contact.html\` — brand story and contact options
 
-## Edit store details
+## Editing
 
-- Product names, descriptions, prices, and image paths are in `js/products.js`.
-- WhatsApp, Telegram, and UPI placeholders are near the top of `js/main.js` in `STORE_CONFIG`.
-- Replace the sample artwork in `images/` with your own product photos when they are ready.
-- Update the domain and social sharing details in the page metadata when the domain is live.
+- Add product objects to \`js/products.js\`.
+- Configure WhatsApp, Telegram and UPI values in \`js/main.js\`.
+- Add approved campaign and product images under \`images/\`, then update their paths and alt text in the page or product data.
+- Keep claims about offers, delivery, returns and reviews accurate and confirmed.
 
-## Important before launch
-
-Replace all sample products and contact/payment placeholders with verified store information. The checkout creates an order message for WhatsApp; this static site does not include an online payment gateway.
+The static checkout opens a prepared order message in WhatsApp; it is not a payment gateway. Replace all contact and payment placeholders before accepting real orders.

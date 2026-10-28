@@ -11,14 +11,44 @@
   };
 
   // Use a fresh cart key so any old sample cart cannot be mistaken for this real listing.
-  var CART_KEY = "smartpleasure-cart-v2";
+  var CART_KEY = "smartpleasure-cart-v3";
   var products = Array.isArray(window.STORE_PRODUCTS) ? window.STORE_PRODUCTS : [];
   var money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+  var COLLECTIONS = [
+    { id: "garments", label: "Intimate wear", tag: "IntimateWear", className: "collection-wear", image: "images/lingerie-editorial.webp", alt: "Adult model wearing black and ivory lace lingerie", related: ["accessories", "toys", "roleplay"] },
+    { id: "accessories", label: "Accessories", tag: "Accessories", className: "collection-accessories", image: "images/marquee-portrait-185509.webp", alt: "Smiling adult woman in a softly lit portrait", related: ["garments", "massagers", "toys"] },
+    { id: "toys", label: "Pleasure toys", tag: "PleasureToys", className: "collection-toys", image: "images/portrait-blue-crop.webp", alt: "Close portrait of an adult woman with crossed arms and shoulders visible", related: ["garments", "massagers", "roleplay"] },
+    { id: "massagers", label: "Massagers", tag: "Massagers", className: "collection-massagers", image: "images/marquee-kolkata.webp", alt: "Moody portrait crop of an adult woman in warm evening light", related: ["toys", "accessories", "dolls"] },
+    { id: "dolls", label: "Dolls & fantasy", tag: "DollsAndFantasy", className: "collection-fantasy", image: "images/marquee-portrait-91835.webp", alt: "Adult woman’s face seen through a lace veil", related: ["roleplay", "toys", "massagers"] },
+    { id: "roleplay", label: "Roleplay & sets", tag: "Roleplay", className: "collection-roleplay", image: "images/marquee-silhouette.webp", alt: "Artful silhouette of an adult woman in profile", related: ["dolls", "garments", "toys"] }
+  ];
 
   function escapeHTML(value) {
     return String(value).replace(/[&<>"']/g, function (character) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[character];
     });
+  }
+
+  function placeholderCard(title, detail, alternate) {
+    return '<article class="module-product-placeholder"><div class="placeholder-art' + (alternate ? ' placeholder-art-alt' : '') + '" aria-hidden="true"><span>IMAGE<br>COMING SOON</span><b>' + (alternate ? '＋' : '✦') + '</b></div><div class="placeholder-copy"><span class="placeholder-label">Product preview</span><h3>' + escapeHTML(title) + '</h3><p>' + escapeHTML(detail) + '</p></div></article>';
+  }
+
+  function renderCollectionPlaceholders(root, selectedCategory) {
+    if (!root) return;
+    var visibleCollections = selectedCategory === "all" ? COLLECTIONS : COLLECTIONS.filter(function (collection) { return collection.id === selectedCategory; });
+    root.innerHTML = visibleCollections.map(function (collection) {
+      var tagMarkup = '<a href="shop.html#products">#AllCollections</a>' + collection.related.map(function (relatedId) {
+        var related = COLLECTIONS.find(function (item) { return item.id === relatedId; });
+        return related ? '<a href="shop.html?category=' + encodeURIComponent(related.id) + '#products">#' + escapeHTML(related.tag) + '</a>' : '';
+      }).join("");
+      return '<article class="collection-module shop-collection-module ' + escapeHTML(collection.className) + '" id="shop-module-' + escapeHTML(collection.id) + '">' +
+        '<a class="collection-card ' + escapeHTML(collection.className) + '" href="shop.html?category=' + encodeURIComponent(collection.id) + '#products" aria-label="Explore ' + escapeHTML(collection.label) + '">' +
+        '<img class="collection-backdrop" src="' + escapeHTML(collection.image) + '" alt="' + escapeHTML(collection.alt) + '" loading="lazy">' +
+        '<span class="collection-number">COLLECTION / ADULTS 18+</span><span class="collection-name">' + escapeHTML(collection.label) + '</span><span class="collection-link">Explore this edit <b aria-hidden="true">↗</b></span></a>' +
+        '<div class="module-placeholder-grid">' + placeholderCard("First listing coming soon", "Photo, price and product details will be added here.", false) + placeholderCard("Another find, soon", "Clear information will follow before launch.", true) + '</div>' +
+        '<nav class="module-tags" aria-label="Related collection tags">' + tagMarkup + '</nav></article>';
+    }).join("");
+    root.classList.toggle("has-one-module", visibleCollections.length === 1);
   }
 
   function formatPrice(amount) {
@@ -90,7 +120,7 @@
     if (!element) return;
     element.classList.toggle("is-single-product", list.length === 1);
     if (!list.length) {
-      element.innerHTML = '<p class="empty-products">No items in this category yet.</p>';
+      element.innerHTML = '<div class="empty-products"><p class="eyebrow">The first edit is taking shape</p><h2>Products, soon.</h2><p>We’ll add real product names, photos and details here when the collection is ready.</p><a class="button button-outline" href="shop.html">Explore collections</a></div>';
       return;
     }
     element.innerHTML = list.map(productCard).join("");
@@ -114,9 +144,11 @@
     var product = findProduct(id);
     var breadcrumb = document.querySelector("[data-product-breadcrumb]");
     if (!product) {
-      root.innerHTML = '<div class="not-found"><h1>We could not find that product.</h1><p>It may have moved or the link may be incomplete.</p><a class="button button-primary" href="shop.html">Back to the collection</a></div>';
-      if (breadcrumb) breadcrumb.textContent = "Product not found";
-      document.title = "Product not found | smartpleasure";
+      var heading = products.length ? "We couldn’t find that product." : "The collection is taking shape.";
+      var message = products.length ? "That product link may have changed. Browse the current collection instead." : "Product listings and details will be added here when they are ready.";
+      root.innerHTML = '<div class="not-found"><p class="eyebrow">Product preview</p><h1>' + heading + '</h1><p>' + message + '</p><a class="button button-primary" href="shop.html">Explore collections</a></div>';
+      if (breadcrumb) breadcrumb.textContent = products.length ? "Product not found" : "Coming soon";
+      document.title = (products.length ? "Product not found" : "Product preview") + " | smartpleasure";
       return;
     }
     var safeName = escapeHTML(product.name);
@@ -159,7 +191,7 @@
     if (!itemsRoot || !summaryRoot) return;
     var lines = cartLines();
     if (!lines.length) {
-      itemsRoot.innerHTML = '<div class="empty-cart"><h2>Your bag is waiting.</h2><p>Choose something from the collection to get started.</p><a class="button button-primary" href="shop.html">Browse products</a></div>';
+      itemsRoot.innerHTML = '<div class="empty-cart"><h2>Your bag is waiting.</h2><p>The catalogue is being prepared. Approved products will appear here when they are ready.</p><a class="button button-primary" href="shop.html">Explore collections</a></div>';
       summaryRoot.innerHTML = '<a class="continue-link" href="shop.html">← Continue shopping</a>';
       return;
     }
@@ -246,13 +278,19 @@
     return number.length >= 10 && number.length <= 15 ? number : "";
   }
 
+  function configuredTelegramUrl() {
+    var url = String(STORE_CONFIG.telegramUrl || "").trim();
+    return /^https:\/\/t\.me\/[A-Za-z0-9_]+\/?$/.test(url) && !/yourusername/i.test(url) ? url : "";
+  }
+
   function applyContactLinks() {
     var number = configuredWhatsAppNumber();
     document.querySelectorAll("[data-whatsapp]").forEach(function (link) {
       link.href = number ? "https://wa.me/" + number : "#";
     });
+    var telegramUrl = configuredTelegramUrl();
     document.querySelectorAll("[data-telegram]").forEach(function (link) {
-      link.href = STORE_CONFIG.telegramUrl;
+      link.href = telegramUrl || "#";
     });
   }
 
@@ -335,20 +373,38 @@
   function setupFilters() {
     var grid = document.querySelector("[data-product-grid]");
     if (!grid) return;
-    document.querySelectorAll("[data-product-filter]").forEach(function (button) {
-      button.addEventListener("click", function () {
-        var category = button.getAttribute("data-product-filter");
-        document.querySelectorAll("[data-product-filter]").forEach(function (other) {
-          var active = other === button;
-          other.classList.toggle("is-active", active);
-          other.setAttribute("aria-pressed", active ? "true" : "false");
-        });
-        var filtered = category === "all" ? products : products.filter(function (product) { return product.category === category; });
+    var placeholderRoot = document.querySelector("[data-collection-placeholders]");
+    var buttons = Array.prototype.slice.call(document.querySelectorAll("[data-product-filter]"));
+    function showCategory(category) {
+      var selected = buttons.find(function (button) { return button.getAttribute("data-product-filter") === category; });
+      if (!selected) {
+        category = "all";
+        selected = buttons.find(function (button) { return button.getAttribute("data-product-filter") === "all"; });
+      }
+      buttons.forEach(function (button) {
+        var active = button === selected;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      var filtered = category === "all" ? products : products.filter(function (product) { return product.category === category; });
+      if (!filtered.length && placeholderRoot) {
+        grid.hidden = true;
+        placeholderRoot.hidden = false;
+        renderCollectionPlaceholders(placeholderRoot, category);
+      } else {
+        grid.hidden = false;
+        if (placeholderRoot) placeholderRoot.hidden = true;
         renderProductGrid(grid, filtered);
-        var count = document.querySelector("[data-product-count]");
-        if (count) count.textContent = filtered.length + (filtered.length === 1 ? " product" : " products");
+      }
+      var count = document.querySelector("[data-product-count]");
+      if (count) count.textContent = filtered.length + (filtered.length === 1 ? " product" : " products");
+    }
+    buttons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        showCategory(button.getAttribute("data-product-filter"));
       });
     });
+    showCategory(new URLSearchParams(window.location.search).get("category") || "all");
   }
 
   function setupMenus() {
@@ -361,6 +417,21 @@
         button.setAttribute("aria-label", isOpen ? "Open menu" : "Close menu");
         nav.classList.toggle("is-open", !isOpen);
       });
+    });
+  }
+
+  // Make the selected collection tab clear while keeping the same menu on every page.
+  function setupCategoryRibbon() {
+    var path = window.location.pathname.toLowerCase();
+    var isCollectionPage = path === "/" || path.endsWith("/") || path.endsWith("index.html") || path.endsWith("shop.html");
+    var currentCategory = new URLSearchParams(window.location.search).get("category") || "all";
+    document.querySelectorAll(".category-ribbon a").forEach(function (link) {
+      var linkUrl = new URL(link.href, window.location.href);
+      var linkCategory = linkUrl.searchParams.get("category") || "all";
+      var isActive = isCollectionPage && linkCategory === currentCategory;
+      link.classList.toggle("is-active", isActive);
+      if (isActive) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
     });
   }
 
@@ -388,6 +459,12 @@
         window.alert("Add your WhatsApp number in js/main.js before launch.");
         return;
       }
+      var telegramLink = event.target.closest("[data-telegram]");
+      if (telegramLink && !configuredTelegramUrl()) {
+        event.preventDefault();
+        window.alert("Add your Telegram link in js/main.js before launch.");
+        return;
+      }
       if (event.target.closest("[data-upi-pay]")) handleUpiPayment();
       if (event.target.closest("[data-copy-upi]")) copyUpiId();
     });
@@ -413,6 +490,7 @@
     applyContactLinks();
     setupFilters();
     setupMenus();
+    setupCategoryRibbon();
     setupInteractions();
     setCurrentYear();
   });

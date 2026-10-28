@@ -1,34 +1,33 @@
-# Project Brief
+# Smartpleasure storefront brief
 
-## Store concept
+## Brand and audience
 
-- Products: massagers and pleasure devices for adults aged 18 and over.
-- The exact massager range is still to be decided.
-- Launch with about 5–6 products. Most should be priced below ₹1,000, with 1–2 products around ₹1,000–₹3,000.
-- Store name: smartpleasure.
-- Target domain: smartpleasure.shop (provided as http://smartpleasure.shop; not live yet).
+- Brand: smartpleasure
+- Domain: smartpleasure.shop
+- Audience: adults in India, with inclusive appeal for women and men.
+- Voice: sensual, discreet, trustworthy and welcoming. Use light Hinglish alongside clear English.
+- Adults 18+ only.
 
-## Brand and design
+## Visual direction
 
-- Personality: modern and reassuring.
-- Selected homepage direction: Quiet modern.
-- Recommended palette: warm cream, deep sage green and muted rose.
-- Recommended typography: DM Sans for body text and Lora for headings, loaded from Google Fonts with system fallbacks.
-- Product photography is not ready. Use clearly identified, abstract placeholders until real product photos are supplied.
+Create an original storefront inspired by the image-led merchandising and category-first browsing on Snowra. Use a burgundy, rose and ivory palette, editorial typography, floating image cards, a moving image ribbon, and clear category shortcuts. Do not copy Snowra's code, product photography or brand assets.
 
-## Pages and shopping experience
+Only use non-explicit reference imagery that the owner confirms is licensed for commercial use. Reference photos are for campaign/editorial mood; do not present them as product listings. Exclude nude imagery and photos with third-party watermarks. Product names, prices, descriptions and product photos will be supplied later.
 
-- Home, shop, product detail, cart, checkout, about and contact pages.
-- Product details should load from a product ID in the URL.
-- Cart should support add, quantity changes, removal, totals and browser local storage.
-- Checkout should collect name, phone and address, then open a prepared WhatsApp message. Include a UPI section with clearly marked UPI ID and QR placeholders.
-- Contact options: WhatsApp and Telegram. The current implementation request specifically requires WhatsApp for checkout and a floating button.
-- Include an offers banner and a customer review area. Do not invent customer reviews.
+## Pages and features
 
-## Configuration needed before launch
+Rebuild these static pages in plain HTML, CSS and vanilla JavaScript: home, shop, product detail, cart, checkout, about and contact.
 
-- Publish smartpleasure.shop and confirm HTTPS availability before launch.
-- WhatsApp number with country code, Telegram username/link, UPI ID and a real UPI QR image.
-- Final product names, descriptions, photos and prices.
-- Confirm delivery charges, shipping details, return policy and any real offers before publishing those claims.
-- A live online payment gateway is not connected in this static-site version. WhatsApp checkout and a configured UPI deep link are the available order/payment paths.
+- Keep the product array empty until confirmed listings are supplied.
+- Keep category browsing, filtering, mobile navigation, dynamic product detail, localStorage cart, quantity changes and removal ready for the catalogue.
+- Keep WhatsApp order checkout and the UPI payment section. Treat contact and payment values as placeholders until the owner provides live details.
+- Include adults 18+ messaging and the floating WhatsApp contact button.
+- Use responsive mobile-first layouts and respect reduced-motion settings.
+- Do not add unconfirmed offers, delivery claims or customer reviews.
+
+## Before launch
+
+- Add the first approved product records and product images.
+- Configure the real WhatsApp number, Telegram link and UPI ID/QR.
+- Confirm shipping, returns, privacy, payment and any promotional terms before adding related claims.
+- Push the approved changes to GitHub and allow the connected static host to deploy them.

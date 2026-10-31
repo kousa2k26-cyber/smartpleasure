@@ -33,28 +33,61 @@
     <a class="header-cart active" href="cart.html" aria-label="Open your bag">Bag <span class="cart-count" data-cart-count>0</span></a>
   </header>
   <nav class="category-ribbon" aria-label="Shop by collection">
-    <a href="shop.html#products">All collections</a><a href="shop.html?category=garments#products">Intimate wear</a><a href="shop.html?category=accessories#products">Accessories</a><a href="shop.html?category=toys#products">Pleasure toys</a><a href="shop.html?category=massagers#products">Massagers</a><a href="shop.html?category=dolls#products">Dolls &amp; fantasy</a><a href="shop.html?category=roleplay#products">Roleplay</a>
+    <a href="shop.html#products">All collections</a>
+    <a href="shop.html?category=garments#products">Intimate wear</a>
+    <a href="shop.html?category=toys#products">Pleasure toys</a>
+    <a href="shop.html?category=dolls#products">Dolls &amp; fantasy</a>
   </nav><main class="section-wrap checkout-page">
-    <div class="page-intro page-intro-compact"><p class="eyebrow">Almost there</p><h1>Checkout.</h1><p>Share your details and review your order before sending it to WhatsApp.</p></div>
-    <div class="checkout-empty" data-checkout-empty hidden><h2>Your bag is empty.</h2><p>The catalogue is being prepared. Add products when the collection is ready.</p><a class="button button-primary" href="shop.html">Explore collections</a></div>
+    <div class="page-intro page-intro-compact commerce-intro"><p class="eyebrow">The final details · Checkout</p><h1>Nearly yours.</h1><p>Share your details, then review and send your order on WhatsApp.</p></div>
+    <nav class="checkout-progress" aria-label="Checkout steps">
+      <a class="checkout-step is-complete" href="cart.html"><i>01</i><b>Your bag</b></a>
+      <a class="checkout-step is-current" id="checkout-step-personal" href="checkout.html?preview=1#checkout-personal" aria-current="step" aria-controls="checkout-personal" data-checkout-tab="1"><i>02</i><b>Personal details</b></a>
+      <a class="checkout-step" id="checkout-step-address" href="checkout.html?preview=1#checkout-address" aria-controls="checkout-address" data-checkout-tab="2"><i>03</i><b>Address</b></a>
+      <a class="checkout-step" id="checkout-step-confirm" href="checkout.html?preview=1#checkout-confirm" aria-controls="checkout-confirm" data-checkout-tab="3"><i>04</i><b>Confirm order</b></a>
+    </nav>
+    <p class="checkout-navigation-hint">Move between sections any time. We’ll check your details before the order is sent.</p>
+    <div class="checkout-empty" data-checkout-empty hidden><h2>Your bag is empty.</h2><p data-checkout-empty-copy>Add a product to your bag before starting checkout.</p><p data-checkout-preview-note hidden>This is a checkout preview, so you can review each section. Add a product before placing an order.</p><a class="button button-primary" href="shop.html">Explore collections</a></div>
     <div class="checkout-layout" data-checkout-content>
-      <section class="checkout-card">
-        <h2>Your details</h2><p class="form-intro">We’ll open WhatsApp with your order details for you to review.</p>
-        <form data-checkout-form>
-          <label for="customer-name">Full name</label><input id="customer-name" name="name" type="text" autocomplete="name" required>
-          <label for="customer-phone">Phone number</label><input id="customer-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" pattern="[0-9+() -]{10,18}" title="Enter a phone number with 10 to 15 digits" required>
-          <label for="customer-address">Delivery address</label><textarea id="customer-address" name="address" rows="4" autocomplete="street-address" required></textarea>
-          <button class="button button-primary button-wide" type="submit">Continue on WhatsApp</button>
-          <p class="form-note">Your order is placed only after you review and send the message in WhatsApp.</p><p class="form-status" data-checkout-status aria-live="polite"></p>
+      <section class="checkout-card checkout-form-card">
+        <p class="eyebrow">A few details · Bas itna sa</p><h2>Make it yours.</h2><p class="form-intro">Add your details in three simple steps. You’ll review everything before your order message opens.</p>
+        <form data-checkout-form novalidate>
+          <section class="checkout-panel" id="checkout-personal" role="tabpanel" data-checkout-panel="1" aria-labelledby="checkout-step-personal">
+            <div class="checkout-panel-heading"><span class="checkout-panel-number">01</span><div><h3>Personal details</h3><p>How should we reach you?</p></div></div>
+            <label for="customer-name">Full name</label><input id="customer-name" name="name" type="text" autocomplete="name" placeholder="Your name" required>
+            <label for="customer-phone">Phone number</label><input id="customer-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" pattern="[0-9+() -]{10,18}" title="Enter a phone number with 10 to 15 digits" placeholder="10-digit mobile number" required>
+            <div class="checkout-step-actions checkout-step-actions-end"><button class="button button-primary" type="button" data-checkout-next>Continue to address <span aria-hidden="true">→</span></button></div>
+          </section>
+
+          <section class="checkout-panel" id="checkout-address" role="tabpanel" data-checkout-panel="2" aria-labelledby="checkout-step-address" hidden>
+            <div class="checkout-panel-heading"><span class="checkout-panel-number">02</span><div><h3>Delivery address</h3><p>Where should we send your parcel?</p></div></div>
+            <label for="customer-address">House, building, street &amp; landmark</label><textarea id="customer-address" name="address" rows="3" autocomplete="street-address" placeholder="Flat / house number, street, nearby landmark" required></textarea>
+            <div class="checkout-address-grid"><div><label for="customer-city">City</label><input id="customer-city" name="city" type="text" autocomplete="address-level2" placeholder="City" required></div><div><label for="customer-state">State</label><input id="customer-state" name="state" type="text" autocomplete="address-level1" placeholder="State" required></div></div>
+            <label for="customer-pincode">PIN code</label><input id="customer-pincode" name="pincode" type="text" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}" title="Enter your 6-digit PIN code" placeholder="6-digit PIN code" required>
+            <div class="checkout-step-actions"><button class="button button-outline" type="button" data-checkout-back="1">← Personal details</button><button class="button button-primary" type="button" data-checkout-next>Review order <span aria-hidden="true">→</span></button></div>
+          </section>
+
+          <section class="checkout-panel" id="checkout-confirm" role="tabpanel" data-checkout-panel="3" aria-labelledby="checkout-step-confirm" hidden>
+            <div class="checkout-panel-heading"><span class="checkout-panel-number">03</span><div><h3>Confirm order</h3><p>Check your details before sending.</p></div></div>
+            <div class="checkout-customer-review" data-checkout-customer-review></div>
+            <div class="checkout-review-items" data-checkout-review-items></div>
+            <section class="checkout-payment-panel" aria-labelledby="checkout-payment-title">
+              <p class="eyebrow">Payment · UPI</p><h4 id="checkout-payment-title">Pay after we confirm</h4>
+              <p class="form-note">We’ll confirm availability and delivery charges on WhatsApp first. Your UPI payment option is shown below; add your real UPI ID and QR before launch.</p>
+              <div class="upi-details"><div><span class="detail-label">UPI ID</span><strong data-upi-id>yourname@upi</strong></div><button class="text-button" type="button" data-copy-upi>Copy ID</button></div>
+              <img class="upi-qr" src="images/upi-qr-placeholder.svg" alt="Placeholder QR code only; replace with your real UPI payment QR code before accepting payments">
+              <button class="button button-outline button-wide" type="button" data-upi-pay>Open UPI app</button>
+            </section>
+            <button class="button button-primary button-wide confirm-order-button" type="submit">Confirm order on WhatsApp <span aria-hidden="true">↗</span></button>
+            <p class="form-note">Your order is sent only after you review and tap Send in WhatsApp.</p><p class="form-status" data-checkout-status aria-live="polite"></p>
+            <div class="checkout-step-actions"><button class="button button-outline" type="button" data-checkout-back="2">← Edit address</button><span class="form-note">You can still go back and edit.</span></div>
+          </section>
         </form>
       </section>
       <aside class="checkout-side">
         <section class="checkout-card order-summary-card"><h2>Order summary</h2><div data-checkout-summary></div></section>
-        <section class="checkout-card upi-card"><p class="eyebrow">UPI payment</p><h2>Pay with UPI</h2>
-          <p class="form-note">Add your UPI ID and scannable QR code before accepting payments.</p>
-          <div class="upi-details"><div><span class="detail-label">UPI ID</span><strong data-upi-id>yourname@upi</strong></div><button class="text-button" type="button" data-copy-upi>Copy ID</button></div>
-          <img class="upi-qr" src="images/upi-qr-placeholder.svg" alt="Non-scannable placeholder QR code; replace it with your real UPI payment QR code">
-          <button class="button button-outline button-wide" type="button" data-upi-pay>Open UPI app</button>
+        <section class="checkout-card order-help-card" aria-label="Checkout support">
+          <div><p class="eyebrow">Need a hand?</p><h2>Questions before you order?</h2><p class="form-note">Talk to us privately on your preferred channel.</p></div>
+          <div class="order-help-actions"><a class="button button-primary" href="#" data-whatsapp>Chat on WhatsApp</a><a class="button button-outline" href="contact.html">Contact options</a></div>
         </section>
       </aside>
     </div>
@@ -63,7 +96,7 @@
     <div class="section-wrap footer-main">
       <div class="footer-brand-block"><a class="brand footer-brand" href="index.html">smart<span>pleasure</span><i>.</i></a><p>A grown-up space for curiosity and self-expression.</p><span class="adult-note">For adults 18 and over</span></div>
       <div class="footer-links"><h2>Explore</h2><a href="shop.html">All collections</a><a href="about.html">Our story</a><a href="contact.html">Contact</a></div>
-      <div class="footer-links"><h2>Get in touch</h2><a href="contact.html#whatsapp" data-whatsapp>WhatsApp</a><a href="https://t.me/yourusername" data-telegram target="_blank" rel="noopener noreferrer">Telegram</a><p>Questions are welcome.</p></div>
+      <div class="footer-links"><h2>Get in touch</h2><a href="contact.html#whatsapp" data-whatsapp>WhatsApp</a><a href="#" data-telegram target="_blank" rel="noopener noreferrer">Telegram</a><p>Questions are welcome.</p></div>
     </div>
     <div class="section-wrap footer-bottom"><span>© <span data-current-year></span> smartpleasure</span><span>For adults 18+ · Made for feeling at ease</span></div>
   </footer>

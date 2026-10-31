@@ -5,7 +5,7 @@
   // Replace these values with your real store details before launch.
   var STORE_CONFIG = {
     storeName: "smartpleasure",
-    whatsappNumber: "91XXXXXXXXXX", // Country code + number, digits only. Example format: 919876543210
+    whatsappNumber: "919832326674", // 10-digit Indian mobile number with +91 country code for WhatsApp links
     telegramUrl: "https://t.me/yourusername",
     upiId: "yourname@upi"
   };
@@ -14,13 +14,11 @@
   var CART_KEY = "smartpleasure-cart-v3";
   var products = Array.isArray(window.STORE_PRODUCTS) ? window.STORE_PRODUCTS : [];
   var money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+  var currentCheckoutStep = 1;
   var COLLECTIONS = [
-    { id: "garments", label: "Intimate wear", tag: "IntimateWear", className: "collection-wear", image: "images/lingerie-editorial.webp", alt: "Adult model wearing black and ivory lace lingerie", related: ["accessories", "toys", "roleplay"] },
-    { id: "accessories", label: "Accessories", tag: "Accessories", className: "collection-accessories", image: "images/marquee-portrait-185509.webp", alt: "Smiling adult woman in a softly lit portrait", related: ["garments", "massagers", "toys"] },
-    { id: "toys", label: "Pleasure toys", tag: "PleasureToys", className: "collection-toys", image: "images/portrait-blue-crop.webp", alt: "Close portrait of an adult woman with crossed arms and shoulders visible", related: ["garments", "massagers", "roleplay"] },
-    { id: "massagers", label: "Massagers", tag: "Massagers", className: "collection-massagers", image: "images/marquee-kolkata.webp", alt: "Moody portrait crop of an adult woman in warm evening light", related: ["toys", "accessories", "dolls"] },
-    { id: "dolls", label: "Dolls & fantasy", tag: "DollsAndFantasy", className: "collection-fantasy", image: "images/marquee-portrait-91835.webp", alt: "Adult woman’s face seen through a lace veil", related: ["roleplay", "toys", "massagers"] },
-    { id: "roleplay", label: "Roleplay & sets", tag: "Roleplay", className: "collection-roleplay", image: "images/marquee-silhouette.webp", alt: "Artful silhouette of an adult woman in profile", related: ["dolls", "garments", "toys"] }
+    { id: "garments", label: "Intimate wear", tag: "IntimateWear", className: "collection-wear", image: "images/lingerie-editorial.webp", alt: "Adult model wearing black and ivory lace lingerie", related: ["toys", "dolls"] },
+    { id: "toys", label: "Pleasure toys", tag: "PleasureToys", className: "collection-toys", image: "images/portrait-blue-crop.webp", alt: "Close portrait of an adult woman with crossed arms and shoulders visible", related: ["garments", "dolls"] },
+    { id: "dolls", label: "Dolls & fantasy", tag: "DollsAndFantasy", className: "collection-fantasy", image: "images/marquee-portrait-91835.webp", alt: "Adult woman’s face seen through a lace veil", related: ["garments", "toys"] }
   ];
 
   function escapeHTML(value) {
@@ -33,10 +31,22 @@
     return '<article class="module-product-placeholder"><div class="placeholder-art' + (alternate ? ' placeholder-art-alt' : '') + '" aria-hidden="true"><span>IMAGE<br>COMING SOON</span><b>' + (alternate ? '＋' : '✦') + '</b></div><div class="placeholder-copy"><span class="placeholder-label">Product preview</span><h3>' + escapeHTML(title) + '</h3><p>' + escapeHTML(detail) + '</p></div></article>';
   }
 
+  function moduleProductCard(product) {
+    var url = "product.html?id=" + encodeURIComponent(product.id);
+    return '<article class="module-product-placeholder module-product-reference">' +
+      '<a class="module-reference-image" href="' + url + '"><img src="' + escapeHTML(product.image) + '" alt="' + escapeHTML(product.imageAlt) + '" loading="lazy"></a>' +
+      '<div class="placeholder-copy"><span class="placeholder-label">Illustrated preview</span><h3><a href="' + url + '">' + escapeHTML(product.name) + '</a></h3>' +
+      '<p>' + formatPrice(product.price) + ' · reference price</p></div></article>';
+  }
+
   function renderCollectionPlaceholders(root, selectedCategory) {
     if (!root) return;
     var visibleCollections = selectedCategory === "all" ? COLLECTIONS : COLLECTIONS.filter(function (collection) { return collection.id === selectedCategory; });
     root.innerHTML = visibleCollections.map(function (collection) {
+      var collectionProducts = products.filter(function (product) { return product.category === collection.id; }).slice(0, 2);
+      var productPreviews = collectionProducts.length ? collectionProducts.map(moduleProductCard).join("") :
+        placeholderCard("First listing coming soon", "Photo, price and product details will be added here.", false) +
+        placeholderCard("Another find, soon", "Clear information will follow before launch.", true);
       var tagMarkup = '<a href="shop.html#products">#AllCollections</a>' + collection.related.map(function (relatedId) {
         var related = COLLECTIONS.find(function (item) { return item.id === relatedId; });
         return related ? '<a href="shop.html?category=' + encodeURIComponent(related.id) + '#products">#' + escapeHTML(related.tag) + '</a>' : '';
@@ -45,7 +55,7 @@
         '<a class="collection-card ' + escapeHTML(collection.className) + '" href="shop.html?category=' + encodeURIComponent(collection.id) + '#products" aria-label="Explore ' + escapeHTML(collection.label) + '">' +
         '<img class="collection-backdrop" src="' + escapeHTML(collection.image) + '" alt="' + escapeHTML(collection.alt) + '" loading="lazy">' +
         '<span class="collection-number">COLLECTION / ADULTS 18+</span><span class="collection-name">' + escapeHTML(collection.label) + '</span><span class="collection-link">Explore this edit <b aria-hidden="true">↗</b></span></a>' +
-        '<div class="module-placeholder-grid">' + placeholderCard("First listing coming soon", "Photo, price and product details will be added here.", false) + placeholderCard("Another find, soon", "Clear information will follow before launch.", true) + '</div>' +
+        '<div class="module-placeholder-grid">' + productPreviews + '</div>' +
         '<nav class="module-tags" aria-label="Related collection tags">' + tagMarkup + '</nav></article>';
     }).join("");
     root.classList.toggle("has-one-module", visibleCollections.length === 1);
@@ -62,7 +72,18 @@
     if (originalPrice > Number(product.price)) {
       markup += '<span class="price-was">MRP <s>' + formatPrice(originalPrice) + '</s></span>';
     }
+    if (product.isDraft) markup += '<small class="price-reference-note">Indicative reference price · confirm before launch</small>';
     return markup + '</p>';
+  }
+
+  function draftProductNotice(product) {
+    return product.isDraft ? '<p class="product-draft-note">Concept preview · illustration, price and product details need confirmation before sale.</p>' : '';
+  }
+
+  function addToBagButton(product, wide) {
+    var buttonClass = 'button button-primary' + (wide ? ' button-wide' : '');
+    if (product.isDraft) return '<button class="' + buttonClass + ' product-preview-button" type="button" data-add-to-cart="' + escapeHTML(product.id) + '">Add preview to bag</button>';
+    return '<button class="' + buttonClass + '" type="button" data-add-to-cart="' + escapeHTML(product.id) + '">Add to bag</button>';
   }
 
   function findProduct(id) {
@@ -108,12 +129,11 @@
     var image = escapeHTML(product.image);
     var alt = escapeHTML(product.imageAlt);
     var url = "product.html?id=" + encodeURIComponent(product.id);
-    return '<article class="product-card">' +
+    return '<article class="product-card' + (product.isDraft ? ' is-draft' : '') + '">' +
       '<a class="product-image-link" href="' + url + '" aria-label="View ' + name + '"><img src="' + image + '" alt="' + alt + '" loading="lazy"></a>' +
       '<div class="product-info"><p class="product-category">' + category + '</p>' +
       '<h3 class="product-title"><a href="' + url + '">' + name + '</a></h3>' +
-      priceMarkup(product, "product-price") +
-      '<button class="button button-outline button-small" type="button" data-add-to-cart="' + id + '">Add to bag</button></div></article>';
+      priceMarkup(product, "product-price") + draftProductNotice(product) + addToBagButton(product, false) + '</div></article>';
   }
 
   function renderProductGrid(element, list) {
@@ -134,6 +154,11 @@
       renderProductGrid(element, products);
       var count = document.querySelector("[data-product-count]");
       if (count) count.textContent = products.length + (products.length === 1 ? " product" : " products");
+    });
+    document.querySelectorAll("[data-home-product-preview]").forEach(function (element) {
+      var category = element.getAttribute("data-home-product-preview");
+      var picks = products.filter(function (product) { return category === "all" || product.category === category; }).slice(0, 2);
+      if (picks.length) element.innerHTML = picks.map(moduleProductCard).join("");
     });
   }
 
@@ -177,7 +202,7 @@
       '<div class="product-detail-copy"><p class="product-category">' + escapeHTML(product.categoryLabel) + '</p>' +
       '<h1>' + safeName + '</h1>' + priceMarkup(product, "product-detail-price") +
       '<p class="product-description">' + escapeHTML(product.description) + '</p>' +
-      '<button class="button button-primary" type="button" data-add-to-cart="' + escapeHTML(product.id) + '">Add to bag</button>' +
+      draftProductNotice(product) + addToBagButton(product, false) +
       '<div class="product-detail-meta">' +
       (featureMarkup ? '<section><h2>Key features</h2><ul>' + featureMarkup + '</ul></section>' : '') +
       '<section><h2>Product details</h2><ul>' + detailMarkup + '</ul></section>' +
@@ -191,8 +216,8 @@
     if (!itemsRoot || !summaryRoot) return;
     var lines = cartLines();
     if (!lines.length) {
-      itemsRoot.innerHTML = '<div class="empty-cart"><h2>Your bag is waiting.</h2><p>The catalogue is being prepared. Approved products will appear here when they are ready.</p><a class="button button-primary" href="shop.html">Explore collections</a></div>';
-      summaryRoot.innerHTML = '<a class="continue-link" href="shop.html">← Continue shopping</a>';
+      itemsRoot.innerHTML = '<div class="empty-cart"><span class="empty-cart-mark" aria-hidden="true">✦</span><p class="eyebrow">A little room for what you love</p><h2>Your bag is waiting.</h2><p>There are no products in your bag yet. Explore the collections and add a favourite when you find it.</p><a class="button button-primary" href="shop.html">Explore collections <span aria-hidden="true">↗</span></a></div>';
+      summaryRoot.innerHTML = '<p class="eyebrow">Bag summary</p><h2>Order summary</h2><p class="summary-note">Your item total will appear here after you add a product.</p><a class="continue-link" href="shop.html">Browse the edit <span aria-hidden="true">↗</span></a>';
       return;
     }
     itemsRoot.innerHTML = lines.map(function (line) {
@@ -201,7 +226,7 @@
       return '<article class="cart-line">' +
         '<img class="cart-line-image" src="' + escapeHTML(product.image) + '" alt="' + escapeHTML(product.imageAlt) + '">' +
         '<div class="cart-line-main"><h2 class="cart-line-title"><a href="product.html?id=' + encodeURIComponent(product.id) + '">' + escapeHTML(product.name) + '</a></h2>' +
-        '<p class="cart-line-price">' + formatPrice(product.price) + ' each</p>' +
+        '<p class="cart-line-price">' + formatPrice(product.price) + ' each' + (product.isDraft ? ' · reference' : '') + '</p>' +
         '<div class="cart-line-controls"><div class="quantity-control" aria-label="Quantity for ' + escapeHTML(product.name) + '">' +
         '<button type="button" data-quantity-step="-1" data-product-id="' + id + '" aria-label="Decrease quantity of ' + escapeHTML(product.name) + '">−</button>' +
         '<input type="number" min="1" max="99" value="' + line.quantity + '" data-cart-quantity="' + id + '" aria-label="Quantity of ' + escapeHTML(product.name) + '">' +
@@ -210,9 +235,10 @@
         '<p class="line-total">' + formatPrice(product.price * line.quantity) + '</p></article>';
     }).join("");
     var total = cartTotal(lines);
-    summaryRoot.innerHTML = '<h2>Order total</h2><div class="summary-row"><span>Items subtotal</span><strong>' + formatPrice(total) + '</strong></div>' +
-      '<div class="summary-row summary-total"><span>Total before delivery</span><strong>' + formatPrice(total) + '</strong></div>' +
-      '<p class="summary-note">Delivery charges and availability can be confirmed on WhatsApp before payment.</p>' +
+    var containsDraft = lines.some(function (line) { return line.product.isDraft; });
+    summaryRoot.innerHTML = '<p class="eyebrow">Bag summary</p><h2>Order summary</h2><div class="summary-row"><span>Items total</span><strong>' + formatPrice(total) + '</strong></div>' +
+      '<div class="summary-row summary-delivery"><span>Delivery</span><strong>Confirm on WhatsApp</strong></div>' +
+      (containsDraft ? '<p class="summary-note draft-checkout-note">Preview bag only. These research listings use reference prices and cannot be ordered yet.</p>' : '<p class="summary-note">We’ll confirm availability and delivery charges with you before payment.</p>') +
       '<a class="button button-primary" href="checkout.html">Continue to checkout</a><a class="continue-link" href="shop.html">← Continue shopping</a>';
   }
 
@@ -222,20 +248,94 @@
     var empty = document.querySelector("[data-checkout-empty]");
     var lines = cartLines();
     if (!lines.length) {
-      content.hidden = true;
+      var previewMode = new URLSearchParams(window.location.search).get("preview") === "1";
+      content.hidden = !previewMode;
       if (empty) empty.hidden = false;
-      return;
+      var previewNote = document.querySelector("[data-checkout-preview-note]");
+      var emptyCopy = document.querySelector("[data-checkout-empty-copy]");
+      if (previewNote) previewNote.hidden = !previewMode;
+      if (emptyCopy) emptyCopy.hidden = previewMode;
+      if (!previewMode) return;
+    } else {
+      content.hidden = false;
+      if (empty) empty.hidden = true;
     }
-    content.hidden = false;
-    if (empty) empty.hidden = true;
     var summary = document.querySelector("[data-checkout-summary]");
     if (summary) {
-      summary.innerHTML = lines.map(function (line) {
+      var containsDraft = lines.some(function (line) { return line.product.isDraft; });
+      summary.innerHTML = (lines.length ? lines.map(function (line) {
         return '<div class="checkout-summary-item"><span>' + escapeHTML(line.product.name) + ' × ' + line.quantity + '</span><strong>' + formatPrice(line.product.price * line.quantity) + '</strong></div>';
-      }).join("") + '<div class="summary-row summary-total"><span>Items subtotal</span><strong>' + formatPrice(cartTotal(lines)) + '</strong></div><p class="form-note">Delivery charges are not included and can be confirmed on WhatsApp.</p>';
+      }).join("") : '<p class="form-note">Preview mode · Your bag is empty.</p>') + '<div class="summary-row summary-total"><span>Items subtotal</span><strong>' + formatPrice(cartTotal(lines)) + '</strong></div>' + (containsDraft ? '<p class="form-note draft-checkout-note">This bag contains concept listings. Checkout is for preview only until products, stock and prices are confirmed.</p>' : '<p class="form-note">Delivery charges are not included and can be confirmed on WhatsApp.</p>');
     }
     var upiText = document.querySelector("[data-upi-id]");
     if (upiText) upiText.textContent = STORE_CONFIG.upiId;
+  }
+
+  // Check only the visible step so a customer is not asked to fill hidden fields early.
+  function validateCheckoutPanel(step, reportError) {
+    var panel = document.querySelector('[data-checkout-panel="' + step + '"]');
+    if (!panel) return true;
+    var fields = panel.querySelectorAll("input[required], textarea[required]");
+    for (var index = 0; index < fields.length; index += 1) {
+      if (!fields[index].checkValidity()) {
+        if (reportError !== false) fields[index].reportValidity();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function updateCheckoutReview() {
+    var form = document.querySelector("[data-checkout-form]");
+    if (!form) return;
+    var values = new FormData(form);
+    var customerReview = document.querySelector("[data-checkout-customer-review]");
+    var itemsReview = document.querySelector("[data-checkout-review-items]");
+    var address = [values.get("address"), values.get("city"), values.get("state"), values.get("pincode")]
+      .map(function (part) { return String(part || "").trim(); }).filter(Boolean);
+    if (customerReview) {
+      var name = String(values.get("name") || "").trim() || "Add your name in Personal details";
+      var phone = String(values.get("phone") || "").trim() || "Add your phone number in Personal details";
+      var addressText = address.length ? address.map(escapeHTML).join("<br>") : "Add your delivery address in the Address section";
+      customerReview.innerHTML = '<div><span>Deliver to</span><strong>' + escapeHTML(name) + ' · ' + escapeHTML(phone) +
+        '</strong></div><p>' + addressText + '</p>';
+    }
+    if (itemsReview) {
+      var lines = cartLines();
+      itemsReview.innerHTML = '<p class="eyebrow">Your items</p>' + (lines.length ? lines.map(function (line) {
+        return '<div class="checkout-summary-item"><span>' + escapeHTML(line.product.name) + ' × ' + line.quantity + '</span><strong>' + formatPrice(line.product.price * line.quantity) + '</strong></div>';
+      }).join("") : '<p class="form-note">Add a product before placing an order.</p>') + '<div class="summary-row summary-total"><span>Items subtotal</span><strong>' + formatPrice(cartTotal(lines)) + '</strong></div>';
+    }
+  }
+
+  function setCheckoutStep(step) {
+    var nextStep = Number(step);
+    if (nextStep < 1 || nextStep > 3) return;
+    currentCheckoutStep = nextStep;
+    document.querySelectorAll("[data-checkout-panel]").forEach(function (panel) {
+      panel.hidden = Number(panel.getAttribute("data-checkout-panel")) !== currentCheckoutStep;
+    });
+    document.querySelectorAll("[data-checkout-tab]").forEach(function (button) {
+      var buttonStep = Number(button.getAttribute("data-checkout-tab"));
+      var isCurrent = buttonStep === currentCheckoutStep;
+      button.classList.toggle("is-current", isCurrent);
+      if (isCurrent) button.setAttribute("aria-current", "step");
+      else button.removeAttribute("aria-current");
+    });
+    if (currentCheckoutStep === 3) updateCheckoutReview();
+    showStatus("[data-checkout-status]", "");
+    var panel = document.querySelector('[data-checkout-panel="' + currentCheckoutStep + '"]');
+    if (panel && window.location.hash !== "#" + panel.id) window.location.hash = panel.id;
+  }
+
+  function applyCheckoutLocation() {
+    var stepByHash = { "#checkout-personal": 1, "#checkout-address": 2, "#checkout-confirm": 3 };
+    if (stepByHash[window.location.hash]) setCheckoutStep(stepByHash[window.location.hash]);
+  }
+
+  function continueCheckout() {
+    // Let customers preview each section first; required fields are checked at final confirmation.
+    setCheckoutStep(currentCheckoutStep + 1);
   }
 
   function updateCartCounts() {
@@ -258,7 +358,7 @@
     else cart.push({ id: String(product.id), quantity: 1 });
     saveCart(cart);
     var status = document.querySelector("[data-cart-feedback]");
-    if (status) status.textContent = product.name + " added to your bag.";
+    if (status) status.textContent = product.name + (product.isDraft ? " preview added to your bag. It cannot be ordered until details are confirmed." : " added to your bag.");
   }
 
   function setQuantity(id, quantity) {
@@ -291,6 +391,9 @@
     var telegramUrl = configuredTelegramUrl();
     document.querySelectorAll("[data-telegram]").forEach(function (link) {
       link.href = telegramUrl || "#";
+      link.hidden = !telegramUrl;
+      var contactCard = link.closest("[data-telegram-card]");
+      if (contactCard) contactCard.hidden = !telegramUrl;
     });
   }
 
@@ -311,6 +414,12 @@
 
   function handleCheckoutSubmit(event) {
     event.preventDefault();
+    if (currentCheckoutStep < 3) {
+      continueCheckout();
+      return;
+    }
+    if (!validateCheckoutPanel(1, false)) { setCheckoutStep(1); validateCheckoutPanel(1); return; }
+    if (!validateCheckoutPanel(2, false)) { setCheckoutStep(2); validateCheckoutPanel(2); return; }
     var number = configuredWhatsAppNumber();
     if (!number) {
       showStatus("[data-checkout-status]", "Add your WhatsApp number in js/main.js before using checkout.");
@@ -323,7 +432,13 @@
       showStatus("[data-checkout-status]", "Your bag is empty. Add a product before checking out.");
       return;
     }
-    var message = orderMessage(lines, values.get("name"), values.get("phone"), values.get("address"));
+    if (lines.some(function (line) { return line.product.isDraft; })) {
+      showStatus("[data-checkout-status]", "These are catalogue previews with unconfirmed stock and reference prices. This checkout cannot be submitted as an order yet.");
+      return;
+    }
+    var fullAddress = [values.get("address"), values.get("city"), values.get("state"), values.get("pincode")]
+      .map(function (part) { return String(part || "").trim(); }).filter(Boolean).join(", ");
+    var message = orderMessage(lines, values.get("name"), values.get("phone"), fullAddress);
     var url = "https://wa.me/" + number + "?text=" + encodeURIComponent(message);
     window.open(url, "_blank", "noopener,noreferrer");
     showStatus("[data-checkout-status]", "WhatsApp opened with your order. Review the details and tap Send there.");
@@ -343,12 +458,17 @@
   }
 
   function handleUpiPayment() {
+    var currentLines = cartLines();
+    if (!currentLines.length || currentLines.some(function (line) { return line.product.isDraft; })) {
+      window.alert("Payment is disabled for preview listings. Confirm the catalogue products, stock and prices before accepting payment.");
+      return;
+    }
     var upi = String(STORE_CONFIG.upiId || "");
     if (!upi || upi === "yourname@upi") {
       window.alert("Replace the sample UPI ID in js/main.js before accepting UPI payments.");
       return;
     }
-    var total = cartTotal(cartLines());
+    var total = cartTotal(currentLines);
     var link = "upi://pay?pa=" + encodeURIComponent(upi) + "&pn=" + encodeURIComponent(STORE_CONFIG.storeName) + "&am=" + encodeURIComponent(total) + "&cu=INR&tn=" + encodeURIComponent("smartpleasure order");
     window.location.href = link;
   }
@@ -437,6 +557,20 @@
 
   function setupInteractions() {
     document.addEventListener("click", function (event) {
+      var checkoutTab = event.target.closest("[data-checkout-tab]");
+      if (checkoutTab && !checkoutTab.disabled) {
+        setCheckoutStep(checkoutTab.getAttribute("data-checkout-tab"));
+        return;
+      }
+      if (event.target.closest("[data-checkout-next]")) {
+        continueCheckout();
+        return;
+      }
+      var checkoutBack = event.target.closest("[data-checkout-back]");
+      if (checkoutBack) {
+        setCheckoutStep(checkoutBack.getAttribute("data-checkout-back"));
+        return;
+      }
       var addButton = event.target.closest("[data-add-to-cart]");
       if (addButton) {
         addToCart(addButton.getAttribute("data-add-to-cart"));
@@ -462,7 +596,7 @@
       var telegramLink = event.target.closest("[data-telegram]");
       if (telegramLink && !configuredTelegramUrl()) {
         event.preventDefault();
-        window.alert("Add your Telegram link in js/main.js before launch.");
+        window.alert("Telegram is being set up. Please message us on WhatsApp for now.");
         return;
       }
       if (event.target.closest("[data-upi-pay]")) handleUpiPayment();
@@ -492,6 +626,8 @@
     setupMenus();
     setupCategoryRibbon();
     setupInteractions();
+    applyCheckoutLocation();
+    window.addEventListener("hashchange", applyCheckoutLocation);
     setCurrentYear();
   });
 }());

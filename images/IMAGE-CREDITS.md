@@ -1,5 +1,9 @@
 # Image credits
 
+## Product concept illustrations
+
+The ten product-specific SVG graphics are original vector illustrations created for this Smartpleasure prototype. They depict the product type described in each draft listing and are not supplier photos or proof of exact product specifications. Replace them with approved photos of confirmed inventory before accepting orders.
+
 ## Home-page campaign image
 
 - File: `campaign-editorial.jpg`

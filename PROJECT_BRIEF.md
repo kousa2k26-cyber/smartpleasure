@@ -18,9 +18,9 @@ Only use non-explicit reference imagery that the owner confirms is licensed for 
 
 Rebuild these static pages in plain HTML, CSS and vanilla JavaScript: home, shop, product detail, cart, checkout, about and contact.
 
-- The catalogue contains five intimate-wear and five pleasure-toy research concepts for review. They use custom product-type illustrations, show clearly marked reference prices, and can be added to a preview bag. Checkout blocks order submission while stock, suppliers, final pricing, sizes, specifications and real catalogue photos remain unconfirmed.
+- The catalogue contains five intimate-wear and five pleasure-toy research concepts, plus a first Dolls & fantasy draft listing: Real Body 3D System Doll — Petite. That listing uses owner-supplied product photos and a video, has no confirmed price, and remains a preview until its supplier, stock, specifications and options are confirmed. Checkout blocks order submission while listing details remain unconfirmed.
 - Current collections: intimate wear, pleasure toys, and dolls & fantasy. Accessories, roleplay, and massagers have been removed from storefront navigation and browsing.
-- Keep category browsing, filtering, mobile navigation, dynamic product detail, localStorage cart, quantity changes and removal ready for the catalogue.
+- Keep category browsing, filtering, mobile navigation, dynamic product detail, localStorage cart, quantity changes and removal ready for the catalogue. The Dolls & fantasy shop includes live body-type, skin-tone, hair-type and ethnicity filters; Petite is the only listed body type so far, with Curvy, MILF and Hourglass to follow when those listings are ready. Do not infer ethnicity from reference images.
 - Keep WhatsApp order checkout and the UPI payment section. Treat contact and payment values as placeholders until the owner provides live details.
 - Include adults 18+ messaging and the floating WhatsApp contact button.
 - Use responsive mobile-first layouts and respect reduced-motion settings.

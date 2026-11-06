@@ -33,10 +33,12 @@
 
   function moduleProductCard(product) {
     var url = "product.html?id=" + encodeURIComponent(product.id);
+    var previewLabel = escapeHTML(product.previewLabel || "Illustrated preview");
+    var priceLabel = productHasPrice(product) ? formatPrice(product.price) + " · reference price" : "Price to be confirmed";
     return '<article class="module-product-placeholder module-product-reference">' +
       '<a class="module-reference-image" href="' + url + '"><img src="' + escapeHTML(product.image) + '" alt="' + escapeHTML(product.imageAlt) + '" loading="lazy"></a>' +
-      '<div class="placeholder-copy"><span class="placeholder-label">Illustrated preview</span><h3><a href="' + url + '">' + escapeHTML(product.name) + '</a></h3>' +
-      '<p>' + formatPrice(product.price) + ' · reference price</p></div></article>';
+      '<div class="placeholder-copy"><span class="placeholder-label">' + previewLabel + '</span><h3><a href="' + url + '">' + escapeHTML(product.name) + '</a></h3>' +
+      '<p>' + priceLabel + '</p></div></article>';
   }
 
   function renderCollectionPlaceholders(root, selectedCategory) {
@@ -65,19 +67,35 @@
     return money.format(Number(amount) || 0);
   }
 
+  function productHasPrice(product) {
+    return product.price !== null && product.price !== undefined && product.price !== "" && Number.isFinite(Number(product.price));
+  }
+
+  function productPriceLabel(product, quantity) {
+    if (!productHasPrice(product)) return "Price to be confirmed";
+    return formatPrice(Number(product.price) * (Number(quantity) || 1));
+  }
+
+  function cartTotalLabel(lines) {
+    var total = cartTotal(lines);
+    return total === null ? "Price to be confirmed" : formatPrice(total);
+  }
+
   // Show the original price only when a genuine comparison price is provided.
   function priceMarkup(product, className) {
     var originalPrice = Number(product.originalPrice) || 0;
-    var markup = '<p class="' + className + '"><strong class="price-current">' + formatPrice(product.price) + '</strong>';
-    if (originalPrice > Number(product.price)) {
+    var markup = '<p class="' + className + '"><strong class="price-current">' + productPriceLabel(product) + '</strong>';
+    if (productHasPrice(product) && originalPrice > Number(product.price)) {
       markup += '<span class="price-was">MRP <s>' + formatPrice(originalPrice) + '</s></span>';
     }
-    if (product.isDraft) markup += '<small class="price-reference-note">Indicative reference price · confirm before launch</small>';
+    if (product.isDraft && productHasPrice(product)) markup += '<small class="price-reference-note">Indicative reference price · confirm before launch</small>';
     return markup + '</p>';
   }
 
   function draftProductNotice(product) {
-    return product.isDraft ? '<p class="product-draft-note">Concept preview · illustration, price and product details need confirmation before sale.</p>' : '';
+    if (!product.isDraft) return '';
+    var note = product.draftNotice || "Concept preview · illustration, price and product details need confirmation before sale.";
+    return '<p class="product-draft-note">' + escapeHTML(note) + '</p>';
   }
 
   function addToBagButton(product, wide) {
@@ -119,6 +137,7 @@
   }
 
   function cartTotal(lines) {
+    if (lines.some(function (line) { return !productHasPrice(line.product); })) return null;
     return lines.reduce(function (total, line) { return total + line.product.price * line.quantity; }, 0);
   }
 
@@ -197,8 +216,19 @@
     if (product.sku) detailItems.unshift("SKU: " + product.sku);
     var detailMarkup = detailItems.map(function (detail) { return "<li>" + escapeHTML(detail) + "</li>"; }).join("");
     var includedMarkup = (product.includedItems || []).map(function (item) { return "<li>" + escapeHTML(item) + "</li>"; }).join("");
-    root.innerHTML = '<div class="product-detail-layout">' +
-      '<img class="product-detail-image" src="' + escapeHTML(product.image) + '" alt="' + escapeHTML(product.imageAlt) + '">' +
+    var videoMarkup = product.video
+      ? '<video class="product-detail-video" controls playsinline preload="metadata" poster="' + escapeHTML(product.image) + '" aria-label="Video preview of ' + safeName + '"><source src="' + escapeHTML(product.video) + '" type="video/mp4">Your browser does not support embedded video.</video>'
+      : '';
+    var galleryMarkup = '';
+    if (Array.isArray(product.gallery) && product.gallery.length) {
+      galleryMarkup = '<div class="product-detail-gallery"><img class="product-detail-image" data-gallery-main src="' + escapeHTML(product.gallery[0].image) + '" alt="' + escapeHTML(product.gallery[0].alt) + '">' +
+        '<div class="product-gallery-thumbnails" role="group" aria-label="Product appearance references">' + product.gallery.map(function (image, index) {
+          return '<button class="product-gallery-thumb' + (index === 0 ? ' is-active' : '') + '" type="button" data-gallery-src="' + escapeHTML(image.image) + '" data-gallery-alt="' + escapeHTML(image.alt) + '" aria-label="Show ' + escapeHTML(image.label) + ' appearance image" aria-pressed="' + (index === 0 ? 'true' : 'false') + '"><img src="' + escapeHTML(image.image) + '" alt="" loading="lazy"></button>';
+        }).join('') + '</div>' + videoMarkup + '</div>';
+    } else {
+      galleryMarkup = '<div class="product-detail-gallery"><img class="product-detail-image" src="' + escapeHTML(product.image) + '" alt="' + escapeHTML(product.imageAlt) + '">' + videoMarkup + '</div>';
+    }
+    root.innerHTML = '<div class="product-detail-layout">' + galleryMarkup +
       '<div class="product-detail-copy"><p class="product-category">' + escapeHTML(product.categoryLabel) + '</p>' +
       '<h1>' + safeName + '</h1>' + priceMarkup(product, "product-detail-price") +
       '<p class="product-description">' + escapeHTML(product.description) + '</p>' +
@@ -226,19 +256,18 @@
       return '<article class="cart-line">' +
         '<img class="cart-line-image" src="' + escapeHTML(product.image) + '" alt="' + escapeHTML(product.imageAlt) + '">' +
         '<div class="cart-line-main"><h2 class="cart-line-title"><a href="product.html?id=' + encodeURIComponent(product.id) + '">' + escapeHTML(product.name) + '</a></h2>' +
-        '<p class="cart-line-price">' + formatPrice(product.price) + ' each' + (product.isDraft ? ' · reference' : '') + '</p>' +
+        '<p class="cart-line-price">' + productPriceLabel(product) + (product.isDraft && productHasPrice(product) ? ' · reference' : '') + '</p>' +
         '<div class="cart-line-controls"><div class="quantity-control" aria-label="Quantity for ' + escapeHTML(product.name) + '">' +
         '<button type="button" data-quantity-step="-1" data-product-id="' + id + '" aria-label="Decrease quantity of ' + escapeHTML(product.name) + '">−</button>' +
         '<input type="number" min="1" max="99" value="' + line.quantity + '" data-cart-quantity="' + id + '" aria-label="Quantity of ' + escapeHTML(product.name) + '">' +
         '<button type="button" data-quantity-step="1" data-product-id="' + id + '" aria-label="Increase quantity of ' + escapeHTML(product.name) + '">+</button></div>' +
         '<button type="button" class="remove-button" data-remove-from-cart="' + id + '">Remove</button></div></div>' +
-        '<p class="line-total">' + formatPrice(product.price * line.quantity) + '</p></article>';
+        '<p class="line-total">' + productPriceLabel(product, line.quantity) + '</p></article>';
     }).join("");
-    var total = cartTotal(lines);
     var containsDraft = lines.some(function (line) { return line.product.isDraft; });
-    summaryRoot.innerHTML = '<p class="eyebrow">Bag summary</p><h2>Order summary</h2><div class="summary-row"><span>Items total</span><strong>' + formatPrice(total) + '</strong></div>' +
+    summaryRoot.innerHTML = '<p class="eyebrow">Bag summary</p><h2>Order summary</h2><div class="summary-row"><span>Items total</span><strong>' + cartTotalLabel(lines) + '</strong></div>' +
       '<div class="summary-row summary-delivery"><span>Delivery</span><strong>Confirm on WhatsApp</strong></div>' +
-      (containsDraft ? '<p class="summary-note draft-checkout-note">Preview bag only. These research listings use reference prices and cannot be ordered yet.</p>' : '<p class="summary-note">We’ll confirm availability and delivery charges with you before payment.</p>') +
+      (containsDraft ? '<p class="summary-note draft-checkout-note">Preview bag only. Confirm product details and price before ordering.</p>' : '<p class="summary-note">We’ll confirm availability and delivery charges with you before payment.</p>') +
       '<a class="button button-primary" href="checkout.html">Continue to checkout</a><a class="continue-link" href="shop.html">← Continue shopping</a>';
   }
 
@@ -264,8 +293,8 @@
     if (summary) {
       var containsDraft = lines.some(function (line) { return line.product.isDraft; });
       summary.innerHTML = (lines.length ? lines.map(function (line) {
-        return '<div class="checkout-summary-item"><span>' + escapeHTML(line.product.name) + ' × ' + line.quantity + '</span><strong>' + formatPrice(line.product.price * line.quantity) + '</strong></div>';
-      }).join("") : '<p class="form-note">Preview mode · Your bag is empty.</p>') + '<div class="summary-row summary-total"><span>Items subtotal</span><strong>' + formatPrice(cartTotal(lines)) + '</strong></div>' + (containsDraft ? '<p class="form-note draft-checkout-note">This bag contains concept listings. Checkout is for preview only until products, stock and prices are confirmed.</p>' : '<p class="form-note">Delivery charges are not included and can be confirmed on WhatsApp.</p>');
+        return '<div class="checkout-summary-item"><span>' + escapeHTML(line.product.name) + ' × ' + line.quantity + '</span><strong>' + productPriceLabel(line.product, line.quantity) + '</strong></div>';
+      }).join("") : '<p class="form-note">Preview mode · Your bag is empty.</p>') + '<div class="summary-row summary-total"><span>Items subtotal</span><strong>' + cartTotalLabel(lines) + '</strong></div>' + (containsDraft ? '<p class="form-note draft-checkout-note">This bag contains concept listings. Checkout is for preview only until products, stock and prices are confirmed.</p>' : '<p class="form-note">Delivery charges are not included and can be confirmed on WhatsApp.</p>');
     }
     var upiText = document.querySelector("[data-upi-id]");
     if (upiText) upiText.textContent = STORE_CONFIG.upiId;
@@ -303,8 +332,8 @@
     if (itemsReview) {
       var lines = cartLines();
       itemsReview.innerHTML = '<p class="eyebrow">Your items</p>' + (lines.length ? lines.map(function (line) {
-        return '<div class="checkout-summary-item"><span>' + escapeHTML(line.product.name) + ' × ' + line.quantity + '</span><strong>' + formatPrice(line.product.price * line.quantity) + '</strong></div>';
-      }).join("") : '<p class="form-note">Add a product before placing an order.</p>') + '<div class="summary-row summary-total"><span>Items subtotal</span><strong>' + formatPrice(cartTotal(lines)) + '</strong></div>';
+        return '<div class="checkout-summary-item"><span>' + escapeHTML(line.product.name) + ' × ' + line.quantity + '</span><strong>' + productPriceLabel(line.product, line.quantity) + '</strong></div>';
+      }).join("") : '<p class="form-note">Add a product before placing an order.</p>') + '<div class="summary-row summary-total"><span>Items subtotal</span><strong>' + cartTotalLabel(lines) + '</strong></div>';
     }
   }
 
@@ -399,10 +428,10 @@
 
   function orderMessage(lines, name, phone, address) {
     var items = lines.map(function (line) {
-      return "• " + line.product.name + " × " + line.quantity + " — " + formatPrice(line.product.price * line.quantity);
+      return "• " + line.product.name + " × " + line.quantity + " — " + productPriceLabel(line.product, line.quantity);
     });
     return "Hello " + STORE_CONFIG.storeName + ", I would like to place an order.\n\n" +
-      items.join("\n") + "\n\nItems subtotal: " + formatPrice(cartTotal(lines)) +
+      items.join("\n") + "\n\nItems subtotal: " + cartTotalLabel(lines) +
       "\nDelivery: please confirm\n\nName: " + name + "\nPhone: " + phone + "\nAddress: " + address +
       "\n\nPlease confirm availability and delivery charges before payment.";
   }
@@ -494,34 +523,64 @@
     var grid = document.querySelector("[data-product-grid]");
     if (!grid) return;
     var placeholderRoot = document.querySelector("[data-collection-placeholders]");
+    var dollConfigurator = document.querySelector("[data-doll-configurator]");
+    var dollControls = dollConfigurator ? Array.prototype.slice.call(dollConfigurator.querySelectorAll("[data-doll-filter]")) : [];
+    var dollStatus = dollConfigurator ? dollConfigurator.querySelector("[data-doll-configurator-status]") : null;
     var buttons = Array.prototype.slice.call(document.querySelectorAll("[data-product-filter]"));
+    var currentCategory = "all";
+    function matchesDollFilters(product) {
+      var attributes = product.dollAttributes || {};
+      return dollControls.every(function (control) {
+        var selectedValue = control.value;
+        if (!selectedValue || selectedValue === "all") return true;
+        var productValue = attributes[control.getAttribute("data-doll-filter")];
+        return Array.isArray(productValue) ? productValue.indexOf(selectedValue) !== -1 : String(productValue || "") === selectedValue;
+      });
+    }
     function showCategory(category) {
       var selected = buttons.find(function (button) { return button.getAttribute("data-product-filter") === category; });
       if (!selected) {
         category = "all";
         selected = buttons.find(function (button) { return button.getAttribute("data-product-filter") === "all"; });
       }
+      currentCategory = category;
       buttons.forEach(function (button) {
         var active = button === selected;
         button.classList.toggle("is-active", active);
         button.setAttribute("aria-pressed", active ? "true" : "false");
       });
-      var filtered = category === "all" ? products : products.filter(function (product) { return product.category === category; });
-      if (!filtered.length && placeholderRoot) {
+      var categoryProducts = category === "all" ? products : products.filter(function (product) { return product.category === category; });
+      var filtered = category === "dolls" ? categoryProducts.filter(matchesDollFilters) : categoryProducts;
+      if (dollConfigurator) dollConfigurator.hidden = category !== "dolls";
+      if (!categoryProducts.length && placeholderRoot) {
         grid.hidden = true;
         placeholderRoot.hidden = false;
         renderCollectionPlaceholders(placeholderRoot, category);
       } else {
         grid.hidden = false;
         if (placeholderRoot) placeholderRoot.hidden = true;
-        renderProductGrid(grid, filtered);
+        if (category === "dolls" && !filtered.length) {
+          grid.innerHTML = '<div class="empty-products"><p class="eyebrow">No matches yet</p><h2>Try another combination.</h2><p>Only the Petite body type is listed now. More styles will appear as additional products are added.</p></div>';
+        } else {
+          renderProductGrid(grid, filtered);
+        }
       }
       var count = document.querySelector("[data-product-count]");
       if (count) count.textContent = filtered.length + (filtered.length === 1 ? " product" : " products");
+      if (dollStatus && category === "dolls") {
+        dollStatus.textContent = filtered.length
+          ? "Showing " + filtered.length + (filtered.length === 1 ? " doll listing. " : " doll listings. ") + "Appearance and product options still need supplier confirmation."
+          : "No listed doll matches these filters yet. Petite is the only body type currently listed; Curvy, MILF and Hourglass can be added as their products are ready.";
+      }
     }
     buttons.forEach(function (button) {
       button.addEventListener("click", function () {
         showCategory(button.getAttribute("data-product-filter"));
+      });
+    });
+    dollControls.forEach(function (control) {
+      control.addEventListener("change", function () {
+        if (currentCategory === "dolls") showCategory(currentCategory);
       });
     });
     showCategory(new URLSearchParams(window.location.search).get("category") || "all");
@@ -574,6 +633,20 @@
       var addButton = event.target.closest("[data-add-to-cart]");
       if (addButton) {
         addToCart(addButton.getAttribute("data-add-to-cart"));
+        return;
+      }
+      var galleryThumb = event.target.closest("[data-gallery-src]");
+      if (galleryThumb) {
+        var galleryMain = document.querySelector("[data-gallery-main]");
+        if (galleryMain) {
+          galleryMain.src = galleryThumb.getAttribute("data-gallery-src");
+          galleryMain.alt = galleryThumb.getAttribute("data-gallery-alt") || "Product image";
+        }
+        document.querySelectorAll("[data-gallery-src]").forEach(function (thumb) {
+          var active = thumb === galleryThumb;
+          thumb.classList.toggle("is-active", active);
+          thumb.setAttribute("aria-pressed", active ? "true" : "false");
+        });
         return;
       }
       var removeButton = event.target.closest("[data-remove-from-cart]");

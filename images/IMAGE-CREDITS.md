@@ -4,6 +4,32 @@
 
 The ten product-specific SVG graphics are original vector illustrations created for this Smartpleasure prototype. They depict the product type described in each draft listing and are not supplier photos or proof of exact product specifications. Replace them with approved photos of confirmed inventory before accepting orders.
 
+## Rose Veil Babydoll listing images
+
+- `rose-veil-babydoll-burgundy.png` and `rose-veil-babydoll-blue.png` were supplied by the store owner in this conversation for the Rose Veil Babydoll listing.
+- Confirm that the depicted product, colors, and included pieces match supplier inventory before accepting orders.
+
+## Midnight Lace Bra & Brief listing images
+
+- `midnight-lace-set-black.png` and `midnight-lace-set-pink.png` were supplied by the store owner in this conversation for the Midnight Lace Bra & Brief listing.
+- Confirm that the depicted product, colors, and included pieces match supplier inventory before accepting orders.
+
+## Pearl Glow Two-Piece listing images
+
+- `pearl-glow-two-piece-front.png`, `pearl-glow-two-piece-side.png`, and `pearl-glow-two-piece-detail-board.png` were supplied by the store owner in this conversation for the Pearl Glow Two-Piece listing.
+- Confirm that the depicted design and included pieces match supplier inventory before accepting orders.
+
+## Afterglow Satin Wrap Set listing images
+
+- `afterglow-satin-wrap-detail-board.png`, `afterglow-satin-wrap-lifestyle-1.png`, `afterglow-satin-wrap-lifestyle-2.png`, and `afterglow-satin-wrap-colors.png` were supplied by the store owner in this conversation for the Afterglow Satin Wrap Set listing.
+- Confirm colors, materials, whether a wrap/choker is included, and the complete set contents against supplier inventory before accepting orders.
+
+## Real Body 3D System Doll — Petite listing images
+
+- `real-body-3d-system-doll-petite-original.png`, `real-body-3d-system-doll-petite-medium.png`, and `real-body-3d-system-doll-petite-long-waves.png` were supplied by the store owner in this conversation for the Petite doll preview.
+- `real-body-3d-system-doll-preview.mp4` was supplied by the store owner for the same listing.
+- Confirm the depicted product, body options, appearance options, and specifications with the supplier before accepting orders. Ethnicity is not inferred from these references.
+
 ## Home-page campaign image
 
 - File: `campaign-editorial.jpg`

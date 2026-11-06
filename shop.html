@@ -54,6 +54,58 @@
         </div>
         <p class="shop-count" data-product-count aria-live="polite">0 products</p>
       </div>
+      <section class="doll-configurator" data-doll-configurator hidden aria-labelledby="doll-configurator-title">
+        <div class="doll-configurator-heading">
+          <p class="eyebrow">Live doll filters</p>
+          <h2 id="doll-configurator-title">Find your preferred look</h2>
+          <p>Filter by body type, skin tone, hair type and ethnicity. Results update as you choose.</p>
+        </div>
+        <div class="doll-configurator-filters" role="group" aria-label="Doll appearance filters">
+          <label>Body type
+            <select data-doll-filter="bodyType">
+              <option value="all">All body types</option>
+              <option value="petite">Petite</option>
+              <option value="curvy">Curvy</option>
+              <option value="milf">MILF</option>
+              <option value="hourglass">Hourglass</option>
+            </select>
+          </label>
+          <label>Skin tone
+            <select data-doll-filter="skinTones">
+              <option value="all">All skin tones</option>
+              <option value="light">Light</option>
+              <option value="medium">Medium</option>
+              <option value="deep">Deep</option>
+            </select>
+          </label>
+          <label>Hair type
+            <select data-doll-filter="hairTypes">
+              <option value="all">All hair types</option>
+              <option value="straight">Straight</option>
+              <option value="wavy">Wavy</option>
+              <option value="long-waves">Long waves</option>
+              <option value="pulled-back">Pulled back</option>
+              <option value="curly">Curly</option>
+            </select>
+          </label>
+          <label>Ethnicity
+            <select data-doll-filter="ethnicities">
+              <option value="all">All / not specified</option>
+              <option value="unconfirmed">Not confirmed yet</option>
+              <option value="south-asian">South Asian</option>
+              <option value="east-asian">East Asian</option>
+              <option value="southeast-asian">Southeast Asian</option>
+              <option value="african">African</option>
+              <option value="european">European</option>
+              <option value="middle-eastern">Middle Eastern</option>
+              <option value="latin-american">Latin American</option>
+              <option value="mixed-other">Mixed / other</option>
+            </select>
+          </label>
+        </div>
+        <p class="doll-configurator-status" data-doll-configurator-status aria-live="polite">Only the Petite listing is available so far. Other body types can be added to this configurator as their products are ready.</p>
+        <p class="doll-configurator-note">Ethnicity is not inferred from the reference images; those tags need supplier confirmation.</p>
+      </section>
       <div class="product-grid" data-product-grid aria-live="polite"></div>
       <div class="collection-placeholder-list" data-collection-placeholders aria-live="polite" hidden></div>
     </section>
